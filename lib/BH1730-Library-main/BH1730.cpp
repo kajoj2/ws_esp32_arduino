@@ -21,7 +21,7 @@ BH1730::BH1730() {}
  * Configure sensor
  */
 bool BH1730::begin() {
-  Wire.begin();
+  //Wire.begin();
 
   // Verify if there is a BH1730 on this address
   if((read8(BH1730_REG_PART_ID) >> 4) != BH1730_PART_NUMBER){
@@ -30,7 +30,6 @@ bool BH1730::begin() {
   #endif
     return false;
   };
-
   // Reset 
   write8(BH1730_CMD_SPECIAL | BH1730_CMD_SPECIAL_SOFT_RESET, (1<<7));
 
@@ -77,7 +76,7 @@ float BH1730::readLux() {
   uint8_t ret = 0;
 
   while(((read8(BH1730_REG_CONTROL) & BH1730_REG_CONTROL_ADC_VALID) == 0) && ++ret < BH1730_RET_TIMEOUT){
-    delay(10);
+    delay(150);
   }
 
   if(ret == BH1730_RET_TIMEOUT){
@@ -123,14 +122,14 @@ uint8_t BH1730::read8(uint8_t a) {
   #endif
     Wire.endTransmission();
     
-    Wire.beginTransmission(BH1730_ADDR); 
+    //Wire.beginTransmission(BH1730_ADDR); 
     Wire.requestFrom(BH1730_ADDR, 1); // Wait for 1 byte
   #if (ARDUINO >= 100)
     ret = Wire.read();
   #else
     ret = Wire.receive(); 
   #endif
-    Wire.endTransmission(); 
+  //  Wire.endTransmission(); 
 
   return ret;
 }
@@ -146,7 +145,7 @@ uint16_t BH1730::read16(uint8_t a) {
   #endif
     Wire.endTransmission();
     
-    Wire.beginTransmission(BH1730_ADDR);
+   // Wire.beginTransmission(BH1730_ADDR);
     Wire.requestFrom(BH1730_ADDR, 2); // Wait for 2 bytes
   #if (ARDUINO >= 100)
     ret = Wire.read(); // receive LOW DATA first
