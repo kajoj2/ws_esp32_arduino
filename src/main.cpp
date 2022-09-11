@@ -188,6 +188,20 @@ void vDSP310_proc(void *parameter)
         Serial.println(" degrees of Celsius");
       }
 
+
+
+//Disabled propaby bad values
+      // if (temperatureCount > 0){
+      //     doc["device"] = device;
+      //     doc["time"] = getTime();
+      //     doc["sensor"] = "DSP310";
+      //     doc["temperature"] = temperature[0];
+
+      //     json = "";
+      //     serializeJson(doc, json);
+      //     esp_mqtt_client_publish(client, String("/v1/data/" + String(device) + "/temperature/").c_str(), json.c_str(), 0, 2, 0);
+      // }
+
       Serial.println();
       Serial.print(pressureCount);
       Serial.println(" pressure values found: ");
@@ -196,6 +210,18 @@ void vDSP310_proc(void *parameter)
         Serial.print(pressure[i]);
         Serial.println(" Pascal");
       }
+
+      if (pressureCount > 0){
+          doc["device"] = device;
+          doc["time"] = getTime();
+          doc["sensor"] = "DSP310";
+          doc["pressure"] = pressure[0];
+
+          json = "";
+          serializeJson(doc, json);
+          esp_mqtt_client_publish(client, String("/v1/data/" + String(device) + "/pressure/").c_str(), json.c_str(), 0, 2, 0);
+      }
+
     }
 
     delay(MESSURE_GLOBAL_DEALY_MS);
