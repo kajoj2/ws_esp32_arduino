@@ -18,7 +18,7 @@
 #endif
 #include "Wire.h"
 
-#define BH1730_DEBUG 0
+#define BH1730_DEBUG 1
 
 #define BH1730_ADDR 0x29
 #define BH1730_PART_NUMBER 0x7
