@@ -42,18 +42,18 @@ uint8_t DSP310_init_continous()
 
     // temperature measure rate (value from 0 to 7)
     // 2^temp_mr temperature measurement results per second
-    int16_t temp_mr = 1;
+    int16_t temp_mr = 2;
     // temperature oversampling rate (value from 0 to 7)
     // 2^temp_osr internal temperature measurements per result
     // A higher value increases precision
-    int16_t temp_osr = 7;
+    int16_t temp_osr = 2;
     // pressure measure rate (value from 0 to 7)
     // 2^prs_mr pressure measurement results per second
-    int16_t prs_mr = 1;
+    int16_t prs_mr = 2;
     // pressure oversampling rate (value from 0 to 7)
     // 2^prs_osr internal pressure measurements per result
     // A higher value increases precision
-    int16_t prs_osr = 7;
+    int16_t prs_osr = 2;
     // startMeasureBothCont enables background mode
     // temperature and pressure ar measured automatically
     // High precision and hgh measure rates at the same time are not available.

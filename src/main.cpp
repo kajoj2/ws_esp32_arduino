@@ -45,7 +45,7 @@ void setup()
   configTime(0, 0, ntpServer);
 
   esp_mqtt_client_config_t mqtt_cfg = {
-      .uri = "mqtt://10.128.50",
+      .uri = "mqtt://s0.kajoj.com",
   };
 
   client = esp_mqtt_client_init(&mqtt_cfg);
@@ -54,7 +54,7 @@ void setup()
   xTaskCreate(
     vTMP112_proc,    // Function that should be called
     "TMP112 proc",   // Name of the task (for debugging)
-    10000,            // Stack size (bytes)
+    15000,            // Stack size (bytes)
     NULL,            // Parameter to pass
     1,               // Task priority
     NULL             // Task handle
@@ -62,7 +62,7 @@ void setup()
     xTaskCreate(
     vBH1730_proc,    // Function that should be called
     "BH1730 proc",   // Name of the task (for debugging)
-    10000,            // Stack size (bytes)
+    15000,            // Stack size (bytes)
     NULL,            // Parameter to pass
     1,               // Task priority
     NULL             // Task handle
@@ -70,7 +70,7 @@ void setup()
     xTaskCreate(
     vDSP310_proc,    // Function that should be called
     "DSP310 proc",   // Name of the task (for debugging)
-    10000,            // Stack size (bytes)
+    15000,            // Stack size (bytes)
     NULL,            // Parameter to pass
     1,               // Task priority
     NULL             // Task handle
@@ -78,7 +78,7 @@ void setup()
     xTaskCreate(
     vSHTC3_proc,    // Function that should be called
     "SHTC3 proc",   // Name of the task (for debugging)
-    10000,            // Stack size (bytes)
+    15000,            // Stack size (bytes)
     NULL,            // Parameter to pass
     1,               // Task priority
     NULL             // Task handle
@@ -118,6 +118,10 @@ void vTMP112_proc(void *parameter)
     float TMP112_temperature = TMP112_get_temperature_c();
     Serial.print(TMP112_temperature);
     Serial.println(" C");
+    if (TMP112_temperature > 100 || TMP112_temperature < -10 ){
+       Serial.println("TMP112_temperature limit bard reading");
+       continue;
+    }
 
     doc["device"] = device;
     doc["time"] = getTime();
@@ -238,6 +242,11 @@ void vSHTC3_proc(void *parameter)
     Serial.print(SHTC3_temperature);
     Serial.println(" C");
 
+    if (SHTC3_temperature > 100 || SHTC3_temperature < -10 ){
+       Serial.println("SHTC3_temperature limit bard reading");
+       continue;
+    }
+
     doc["device"] = device;
     doc["time"] = getTime();
     doc["sensor"] = "SHTC3";
@@ -251,6 +260,11 @@ void vSHTC3_proc(void *parameter)
     float SHTC3_huminidity = SHTC3_measure_huminidity();
     Serial.print(SHTC3_huminidity);
     Serial.println(" %");
+
+    if (SHTC3_huminidity > 99 || SHTC3_huminidity < 1 ){
+       Serial.println("SHTC3_huminidity limit bard reading");
+       continue;
+    }
 
     doc["device"] = device;
     doc["time"] = getTime();
