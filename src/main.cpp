@@ -162,69 +162,21 @@ void vDSP310_proc(void *parameter)
   String json;
   for (;;)
   {
-    uint8_t pressureCount = 20;
-    float pressure[pressureCount];
-    uint8_t temperatureCount = 20;
-    float temperature[temperatureCount];
+    float pressure = DSP310_measure_pressure();
 
-    // This function writes the results of continuous measurements to the arrays given as parameters
-    // The parameters temperatureCount and pressureCount should hold the sizes of the arrays temperature and pressure when the function is called
-    // After the end of the function, temperatureCount and pressureCount hold the numbers of values written to the arrays
-    // Note: The Dps310 cannot save more than 32 results. When its result buffer is full, it won't save any new measurement results
-    int16_t ret = DSP310_get_results(temperature, temperatureCount, pressure, pressureCount);
+      Serial.println("pressure values: ");
+      Serial.println(pressure);
+ 
 
-    if (ret != 0)
-    {
-      Serial.println();
-      Serial.println();
-      Serial.print("FAIL! ret = ");
-      Serial.println(ret);
-    }
-    else
-    {
-      Serial.println();
-      Serial.println();
-      Serial.print(temperatureCount);
-      Serial.println(" temperature values found: ");
-      for (int16_t i = 0; i < temperatureCount; i++)
-      {
-        Serial.print(temperature[i]);
-        Serial.println(" degrees of Celsius");
-      }
-
-
-
-//Disabled propaby bad values
-      // if (temperatureCount > 0){
-      //     doc["device"] = device;
-      //     doc["time"] = getTime();
-      //     doc["sensor"] = "DSP310";
-      //     doc["temperature"] = temperature[0];
-
-      //     json = "";
-      //     serializeJson(doc, json);
-      //     esp_mqtt_client_publish(client, String("/v1/data/" + String(device) + "/temperature/").c_str(), json.c_str(), 0, 2, 0);
-      // }
-
-      Serial.println();
-      Serial.print(pressureCount);
-      Serial.println(" pressure values found: ");
-      for (int16_t i = 0; i < pressureCount; i++)
-      {
-        Serial.print(pressure[i]);
-        Serial.println(" Pascal");
-      }
-
-      if (pressureCount > 0){
+      if (pressure > 0){
           doc["device"] = device;
           doc["time"] = getTime();
           doc["sensor"] = "DSP310";
-          doc["pressure"] = pressure[0];
+          doc["pressure"] = pressure;
 
           json = "";
           serializeJson(doc, json);
           esp_mqtt_client_publish(client, String("/v1/data/" + String(device) + "/pressure/").c_str(), json.c_str(), 0, 2, 0);
-      }
 
     }
 
