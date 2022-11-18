@@ -5,8 +5,12 @@
 #include "sensors.h"
 #include "mqtt_client.h"
 #include <ArduinoJson.h>
+#include <HardwareSerial.h>
+#include "Plantower_PMS7003.h"
+Plantower_PMS7003 pms7003 = Plantower_PMS7003();
+HardwareSerial SerialPort(2);
 
-#define MESSURE_GLOBAL_DEALY_MS 1000
+#define MESSURE_GLOBAL_DEALY_MS 5000
 
 const char *device = "DEVELOPMENT_DEVICE_001";
 const char *ntpServer = "pool.ntp.org";
@@ -19,6 +23,7 @@ void vTMP112_proc(void *parameter);
 void vBH1730_proc(void *parameter);
 void vDSP310_proc(void *parameter);
 void vSHTC3_proc(void *parameter);
+void PMS7003_proc(void *parameter);
 
 void setup()
 {
@@ -37,6 +42,7 @@ void setup()
   DSP310_init_continous();
   SHTC3_init();
 
+
   while (WiFi.status() != WL_CONNECTED)
   {
     Serial.print('.');
@@ -54,6 +60,10 @@ void setup()
   esp_mqtt_client_start(client);
 
   mutex = xSemaphoreCreateMutex();
+
+
+  SerialPort.begin(9600,SERIAL_8N1, 16, 17); 
+  pms7003.init(&SerialPort);
 
   xTaskCreate(
       vTMP112_proc,  // Function that should be called
@@ -82,6 +92,14 @@ void setup()
   xTaskCreate(
       vSHTC3_proc,  // Function that should be called
       "SHTC3 proc", // Name of the task (for debugging)
+      15000,        // Stack size (bytes)
+      NULL,         // Parameter to pass
+      1,            // Task priority
+      NULL          // Task handle
+  );
+    xTaskCreate(
+      PMS7003_proc,  // Function that should be called
+      "PMS7003 proc", // Name of the task (for debugging)
       15000,        // Stack size (bytes)
       NULL,         // Parameter to pass
       1,            // Task priority
@@ -263,5 +281,39 @@ void vSHTC3_proc(void *parameter)
     {
      // delay(10);
     }
+  }
+}
+
+void PMS7003_proc(void *parameter)
+{
+  StaticJsonDocument<256> doc;
+  String json;
+  for (;;)
+  {
+    pms7003.updateFrame();
+
+  if (pms7003.hasNewData()) {
+
+      doc["device"] = device;
+      doc["time"] = getTime();
+      doc["sensor"] = "PMS7003";
+      doc["PM_1_0"] = pms7003.getPM_1_0();
+      doc["PM_1_0_atmos"] = pms7003.getPM_1_0_atmos();
+      doc["PM_2_5"] = pms7003.getPM_2_5();
+      doc["PM_2_5_atmos"] = pms7003.getPM_2_5_atmos();
+      doc["PM_10_0"] = pms7003.getPM_10_0();
+      doc["PM_10_0_atmos"] = pms7003.getPM_10_0_atmos();
+      json = "";
+      serializeJson(doc, json);
+      Serial.println(json);
+      esp_mqtt_client_publish(client, String("/v1/data/" + String(device) + "/PM_1_0/").c_str(), json.c_str(), 0, 2, 0);
+      esp_mqtt_client_publish(client, String("/v1/data/" + String(device) + "/PM_1_0_atmos/").c_str(), json.c_str(), 0, 2, 0);
+      esp_mqtt_client_publish(client, String("/v1/data/" + String(device) + "/PM_2_5/").c_str(), json.c_str(), 0, 2, 0);
+      esp_mqtt_client_publish(client, String("/v1/data/" + String(device) + "/PM_2_5_atmos/").c_str(), json.c_str(), 0, 2, 0);
+      esp_mqtt_client_publish(client, String("/v1/data/" + String(device) + "/PM_10_0/").c_str(), json.c_str(), 0, 2, 0);
+      esp_mqtt_client_publish(client, String("/v1/data/" + String(device) + "/PM_10_0_atmos/").c_str(), json.c_str(), 0, 2, 0);
+      delay(MESSURE_GLOBAL_DEALY_MS);
+
+  }
   }
 }
