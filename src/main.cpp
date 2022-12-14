@@ -31,17 +31,14 @@ void setup()
   WiFi.mode(WIFI_STA);
   WiFi.setHostname("DEV BOARD");
   WiFi.begin("iot", "Tajne1234%^");
-  // Initialise I2C communication as MASTER
   Wire.setPins(I2C_SDA, I2C_SCL);
   Wire.begin(I2C_SDA, I2C_SCL);
-  // Initialise serial communication, set baud rate = 9600
   Serial.begin(115200);
 
   BH1730_init();
   TMP112_init_conitonus();
   DSP310_init_continous();
   SHTC3_init();
-
 
   while (WiFi.status() != WL_CONNECTED)
   {
@@ -61,8 +58,7 @@ void setup()
 
   mutex = xSemaphoreCreateMutex();
 
-
-  SerialPort.begin(9600,SERIAL_8N1, 16, 17); 
+  SerialPort.begin(9600, SERIAL_8N1, 16, 17);
   pms7003.init(&SerialPort);
 
   xTaskCreate(
@@ -97,13 +93,13 @@ void setup()
       1,            // Task priority
       NULL          // Task handle
   );
-    xTaskCreate(
-      PMS7003_proc,  // Function that should be called
+  xTaskCreate(
+      PMS7003_proc,   // Function that should be called
       "PMS7003 proc", // Name of the task (for debugging)
-      15000,        // Stack size (bytes)
-      NULL,         // Parameter to pass
-      1,            // Task priority
-      NULL          // Task handle
+      15000,          // Stack size (bytes)
+      NULL,           // Parameter to pass
+      1,              // Task priority
+      NULL            // Task handle
   );
 }
 
@@ -113,7 +109,6 @@ unsigned long getTime()
   struct tm timeinfo;
   if (!getLocalTime(&timeinfo))
   {
-    // Serial.println("Failed to obtain time");
     return (0);
   }
   time(&now);
@@ -158,7 +153,7 @@ void vTMP112_proc(void *parameter)
     }
     else
     {
-    //  delay(10);
+      //  delay(10);
     }
   }
 }
@@ -188,7 +183,7 @@ void vBH1730_proc(void *parameter)
     }
     else
     {
-    //  delay(10);
+      //  delay(10);
     }
   }
 }
@@ -221,7 +216,7 @@ void vDSP310_proc(void *parameter)
     }
     else
     {
-    //  delay(10);
+      //  delay(10);
     }
   }
 }
@@ -279,7 +274,7 @@ void vSHTC3_proc(void *parameter)
     }
     else
     {
-     // delay(10);
+      // delay(10);
     }
   }
 }
@@ -292,7 +287,8 @@ void PMS7003_proc(void *parameter)
   {
     pms7003.updateFrame();
 
-  if (pms7003.hasNewData()) {
+    if (pms7003.hasNewData())
+    {
 
       doc["device"] = device;
       doc["time"] = getTime();
@@ -313,7 +309,6 @@ void PMS7003_proc(void *parameter)
       esp_mqtt_client_publish(client, String("/v1/data/" + String(device) + "/PM_10_0/").c_str(), json.c_str(), 0, 2, 0);
       esp_mqtt_client_publish(client, String("/v1/data/" + String(device) + "/PM_10_0_atmos/").c_str(), json.c_str(), 0, 2, 0);
       delay(MESSURE_GLOBAL_DEALY_MS);
-
-  }
+    }
   }
 }
